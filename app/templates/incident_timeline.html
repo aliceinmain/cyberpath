@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Timeline — {{ incident.title }} | CyberPath{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.incident_detail', incident_id=incident.id) }}">← Back to incident</a>
+<div class="page-heading"><div><p class="eyebrow">ACTIVITY REVIEW · INCIDENT #{{ incident.id }}</p><h1>Event timeline</h1><p class="muted">{{ incident.title }} · {{ log_entries|length }} event(s)</p></div></div>
+<section class="panel detail-panel">
+{% if log_entries %}<div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Event type</th><th>Source IP</th><th>Destination IP</th><th>Raw log</th></tr></thead><tbody>
+{% for entry in log_entries %}<tr><td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ entry.event_type }}</td><td><a href="{{ url_for('main.ip_lookup', incident_id=incident.id, ip=entry.source_ip) }}">{{ entry.source_ip }}</a></td><td>{% if entry.destination_ip != 'Unknown' %}<a href="{{ url_for('main.ip_lookup', incident_id=incident.id, ip=entry.destination_ip) }}">{{ entry.destination_ip }}</a>{% else %}Unknown{% endif %}</td><td class="raw-log">{{ entry.raw_log }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<div class="empty-state"><h3>No events to display</h3><p>Upload a log file from the incident detail page.</p></div>{% endif %}
+</section>
+{% endblock %}

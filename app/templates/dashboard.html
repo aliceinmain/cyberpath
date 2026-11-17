@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | CyberPath{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PERSONAL WORKSPACE</p><h1>Welcome, {{ current_user.username }}</h1><p class="muted">Your incident overview and investigation workspace.</p></div><a class="button" href="{{ url_for('main.create_incident') }}">＋ New Incident</a></div>
+<div class="stats-grid">
+  <article class="stat-card"><span>Total incidents</span><strong>{{ total_count }}</strong></article>
+  <article class="stat-card"><span>Open incidents</span><strong>{{ open_count }}</strong></article>
+  <article class="stat-card"><span>High / Critical</span><strong>{{ priority_count }}</strong></article>
+</div>
+<section class="panel">
+  <div class="section-heading"><div><h2>Incidents</h2><p class="muted">Search and filter your investigations.</p></div></div>
+  <form class="filter-bar" method="get" action="{{ url_for('main.dashboard') }}">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search title or description" aria-label="Search incidents">
+    <select name="status" aria-label="Filter by status"><option value="">All statuses</option>{% for item in ['Open','Investigating','Closed'] %}<option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+    <select name="severity" aria-label="Filter by severity"><option value="">All severities</option>{% for item in ['Low','Medium','High','Critical'] %}<option value="{{ item }}" {% if severity == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+    <button type="submit">Filter</button><a class="button button-secondary" href="{{ url_for('main.dashboard') }}">Reset</a>
+  </form>
+  {% if incidents %}
+  <div class="table-wrap"><table><thead><tr><th>Incident</th><th>Severity</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>
+  {% for incident in incidents %}<tr><td><a class="incident-title" href="{{ url_for('main.incident_detail', incident_id=incident.id) }}">{{ incident.title }}</a><div class="muted description-preview">{{ incident.description|truncate(100) }}</div></td><td><span class="badge severity-{{ incident.severity|lower }}">{{ incident.severity }}</span></td><td><span class="badge status-{{ incident.status|lower }}">{{ incident.status }}</span></td><td>{{ incident.created_at.strftime('%b %d, %Y') }}</td><td><a href="{{ url_for('main.incident_detail', incident_id=incident.id) }}">View →</a></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state"><h3>No incidents found</h3><p>{% if q or status or severity %}Try changing your search or filters.{% else %}Create your first incident to start an investigation.{% endif %}</p><a class="button" href="{{ url_for('main.create_incident') }}">Create an incident</a></div>{% endif %}
+</section>
+{% endblock %}

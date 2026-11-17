@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ incident.title }} | CyberPath{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.dashboard') }}">← Back to dashboard</a>
+<div class="detail-heading">
+  <div><p class="eyebrow">INCIDENT #{{ incident.id }}</p><h1>{{ incident.title }}</h1>
+    <div class="badge-row"><span class="badge severity-{{ incident.severity|lower }}">{{ incident.severity }}</span><span class="badge status-{{ incident.status|lower }}">{{ incident.status }}</span></div>
+  </div>
+  <div class="badge-row">
+    <a class="button button-secondary" href="{{ url_for('main.incident_report', incident_id=incident.id) }}">Generate report</a>
+    <form method="post" action="{{ url_for('main.delete_incident', incident_id=incident.id) }}" onsubmit="return confirm('Delete this incident and its related logs and notes?');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-danger" type="submit">Delete incident</button></form>
+  </div>
+</div>
+<section class="panel detail-panel"><h2>Incident details</h2><p class="muted">Created {{ incident.created_at.strftime('%B %d, %Y at %H:%M') }}</p><div class="detail-description">{{ incident.description }}</div></section>
+<section class="panel detail-panel"><h2>Update incident</h2><form method="post" novalidate>{{ form.hidden_tag() }}<div class="form-grid"><div class="form-field">{{ form.severity.label }}{{ form.severity() }}{% for error in form.severity.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div><div class="form-field">{{ form.status.label }}{{ form.status() }}{% for error in form.status.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div></div>{{ form.submit(class_="button") }}</form></section>
+
+<section class="panel detail-panel">
+  <p class="eyebrow">EVIDENCE INTAKE</p><h2>Upload log files</h2>
+  <p class="muted">Upload a sample .log, .txt, or .csv file. Maximum size: 5 MB. Files are parsed locally and attached to this incident.</p>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('main.upload_logs', incident_id=incident.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-field"><label for="log_file">Log file</label><input id="log_file" name="log_file" type="file" accept=".log,.txt,.csv,text/plain,text/csv" required></div>
+    <button class="button" type="submit">Upload and parse logs</button>
+  </form>
+</section>
+
+<section class="panel detail-panel">
+  <div class="section-heading"><div><p class="eyebrow">ACTIVITY REVIEW</p><h2>Event timeline</h2><p class="muted">{{ log_entries|length }} parsed event(s), chronological order</p></div>
+    <a class="button button-secondary" href="{{ url_for('main.incident_timeline', incident_id=incident.id) }}">Open full timeline</a>
+  </div>
+  {% if log_entries %}
+  <div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Event</th><th>Source IP</th><th>Destination IP</th><th>Raw log</th></tr></thead><tbody>
+  {% for entry in log_entries %}
+    <tr><td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td><td><span class="badge">{{ entry.event_type }}</span></td>
+      <td><a href="{{ url_for('main.ip_lookup', incident_id=incident.id, ip=entry.source_ip) }}">{{ entry.source_ip }}</a></td>
+      <td>{% if entry.destination_ip != 'Unknown' %}<a href="{{ url_for('main.ip_lookup', incident_id=incident.id, ip=entry.destination_ip) }}">{{ entry.destination_ip }}</a>{% else %}Unknown{% endif %}</td>
+      <td class="raw-log">{{ entry.raw_log }}</td></tr>
+  {% endfor %}</tbody></table></div>
+  {% else %}<div class="empty-state"><h3>No log events yet</h3><p>Upload a sample log file to populate this incident's timeline.</p></div>{% endif %}
+</section>
+
+<section class="panel detail-panel">
+  <p class="eyebrow">NETWORK ANALYSIS</p><h2>IP investigation</h2>
+  <p class="muted">Inspect an IP address found in this incident's parsed logs. Risk and location information is simulated for training and is not real threat intelligence.</p>
+  <form class="filter-bar" method="get" action="{{ url_for('main.ip_lookup', incident_id=incident.id) }}">
+    <input name="ip" type="text" placeholder="Enter an IP address" aria-label="IP address" required>
+    <button class="button" type="submit">Investigate IP</button>
+  </form>
+  {% if ip_addresses %}<p class="muted">IPs found in these logs:</p><div class="ip-list">{% for ip in ip_addresses %}<a class="badge" href="{{ url_for('main.ip_lookup', incident_id=incident.id, ip=ip) }}">{{ ip }}</a>{% endfor %}</div>
+  {% else %}<p class="muted">No IP addresses available until logs are imported.</p>{% endif %}
+</section>
+<section class="panel detail-panel">
+  <p class="eyebrow">CASE DOCUMENTATION</p><h2>Evidence notes</h2>
+  <p class="muted">Record observations, actions taken, and conclusions for this incident.</p>
+  <form method="post" action="{{ url_for('main.add_investigation_note', incident_id=incident.id) }}">
+    {{ note_form.hidden_tag() }}
+    <div class="form-field">{{ note_form.content.label }}{{ note_form.content(rows=5, maxlength=10000, placeholder="Write an investigation note...") }}
+      {% for error in note_form.content.errors %}<p class="errors">{{ error }}</p>{% endfor %}
+    </div>
+    {{ note_form.submit(class_="button") }}
+  </form>
+  <div style="margin-top:24px">
+    {% if notes %}
+      {% for note in notes %}
+        <article style="padding:16px 0;border-top:1px solid var(--line)">
+          <p class="muted" style="margin:0 0 8px">{{ note.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+          <div style="white-space:pre-wrap;overflow-wrap:anywhere">{{ note.content }}</div>
+        </article>
+      {% endfor %}
+    {% else %}<p class="muted">No investigation notes have been added yet.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Account Settings | CyberPath{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.dashboard') }}">← Back to workspace</a>
+<div class="page-heading">
+  <div><p class="eyebrow">YOUR ACCOUNT</p><h1>Account settings</h1><p class="muted">Manage your profile details and keep your account secure.</p></div>
+</div>
+<section class="panel form-panel settings-panel">
+  <div class="settings-intro"><span class="settings-icon">◎</span><div><h2>Profile details</h2><p class="muted">Update the name and email address associated with your workspace.</p></div></div>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-field">{{ form.username.label }}{{ form.username(autocomplete="username", maxlength="80") }}{% for error in form.username.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+    <div class="form-field">{{ form.email.label }}{{ form.email(autocomplete="email", maxlength="120") }}{% for error in form.email.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+    <div class="settings-divider"></div>
+    <div class="settings-intro"><span class="settings-icon">⌑</span><div><h2>Password and security</h2><p class="muted">Leave the password fields empty if you don't want to change your password.</p></div></div>
+    <div class="form-field">{{ form.current_password.label }}{{ form.current_password(autocomplete="current-password", placeholder="Required only when changing your password") }}{% for error in form.current_password.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+    <div class="form-grid">
+      <div class="form-field">{{ form.new_password.label }}{{ form.new_password(autocomplete="new-password", placeholder="At least 8 characters") }}{% for error in form.new_password.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+      <div class="form-field">{{ form.confirm_new_password.label }}{{ form.confirm_new_password(autocomplete="new-password", placeholder="Re-enter new password") }}{% for error in form.confirm_new_password.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+    </div>
+    <p class="security-hint">Your password is stored securely as a one-way hash. It is never displayed.</p>
+    {{ form.submit(class_="button") }}
+  </form>
+</section>
+{% endblock %}

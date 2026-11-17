@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login | CyberPath{% endblock %}
+{% block content %}
+<section class="panel">
+    <h1>Welcome back</h1>
+    <p>Log in to continue your investigations.</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-field">
+            {{ form.email.label }}
+            {{ form.email(autocomplete='email') }}
+            {% for error in form.email.errors %}<div class="errors">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="form-field">
+            {{ form.password.label }}
+            {{ form.password(autocomplete='current-password') }}
+            {% for error in form.password.errors %}<div class="errors">{{ error }}</div>{% endfor %}
+        </div>
+        {{ form.submit(class_='button') }}
+    </form>
+    <p class="muted">New to CyberPath? <a href="{{ url_for('main.register') }}">Create an account</a>.</p>
+</section>
+{% endblock %}

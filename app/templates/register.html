@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Create account | CyberPath{% endblock %}
+{% block content %}
+<section class="panel">
+    <h1>Create your account</h1>
+    <p>Set up your personal investigation workspace.</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {% for field in [form.username, form.email, form.password, form.confirm_password] %}
+            <div class="form-field">
+                {{ field.label }}
+                {{ field(autocomplete='username' if field.name == 'username' else ('email' if field.name == 'email' else ('new-password'))) }}
+                {% for error in field.errors %}<div class="errors">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        {{ form.submit(class_='button') }}
+    </form>
+    <p class="muted">Already have an account? <a href="{{ url_for('main.login') }}">Log in</a>.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}New Incident | CyberPath{% endblock %}
+{% block content %}
+<section class="panel form-panel"><a class="back-link" href="{{ url_for('main.dashboard') }}">← Back to dashboard</a><p class="eyebrow">INCIDENT MANAGEMENT</p><h1>Create an incident</h1><p class="muted">Record the event and establish its initial priority.</p>
+<form method="post" novalidate>{{ form.hidden_tag() }}
+  <div class="form-field">{{ form.title.label }}{{ form.title(placeholder="e.g. Suspicious login activity", maxlength="150") }}{% for error in form.title.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+  <div class="form-field">{{ form.description.label }}{{ form.description(rows="6", placeholder="Describe what happened, when it was detected, and any relevant context...") }}{% for error in form.description.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div>
+  <div class="form-grid"><div class="form-field">{{ form.severity.label }}{{ form.severity() }}{% for error in form.severity.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div><div class="form-field">{{ form.status.label }}{{ form.status() }}{% for error in form.status.errors %}<p class="errors">{{ error }}</p>{% endfor %}</div></div>
+  {{ form.submit(class_="button") }}
+</form></section>
+{% endblock %}

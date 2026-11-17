@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}CyberPath | Security Investigation{% endblock %}
+{% block content %}
+<section class="panel">
+    <h1>CyberPath</h1>
+    <p>Your cybersecurity investigation workspace. Practice incident investigation with simulated datasets, log analysis, and evidence documentation.</p>
+    {% if current_user.is_authenticated %}
+        <a class="button" href="{{ url_for('main.dashboard') }}">Open dashboard</a>
+    {% else %}
+        <a class="button" href="{{ url_for('main.register') }}">Create an account</a>
+        <p class="muted">Already registered? <a href="{{ url_for('main.login') }}">Log in</a>.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Incident Report — {{ incident.title }} | CyberPath{% endblock %}
+{% block content %}
+<div class="report-actions" style="display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px">
+  <a class="back-link" href="{{ url_for('main.incident_detail', incident_id=incident.id) }}">← Back to incident</a>
+  <button class="button" type="button" onclick="window.print()">Print / Save as PDF</button>
+</div>
+<header class="panel detail-panel report-header">
+  <p class="eyebrow">CYBERPATH · INCIDENT REPORT</p>
+  <h1>{{ incident.title }}</h1>
+  <div class="badge-row">
+    <span class="badge severity-{{ incident.severity|lower }}">{{ incident.severity }}</span>
+    <span class="badge status-{{ incident.status|lower }}">{{ incident.status }}</span>
+  </div>
+  <p class="muted">Incident #{{ incident.id }} · Generated {{ generated_at.strftime('%B %d, %Y at %H:%M UTC') }}</p>
+</header>
+<section class="panel detail-panel">
+  <h2>1. Incident overview</h2>
+  <p><strong>Created:</strong> {{ incident.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+  <p><strong>Severity:</strong> {{ incident.severity }} &nbsp; <strong>Status:</strong> {{ incident.status }}</p>
+  <h3>Description</h3>
+  <div class="report-prewrap">{{ incident.description or 'No description provided.' }}</div>
+</section>
+<section class="panel detail-panel">
+  <h2>2. Event timeline</h2>
+  <p class="muted">{{ log_entries|length }} parsed event(s), ordered chronologically.</p>
+  {% if log_entries %}
+  <div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Event</th><th>Source IP</th><th>Destination IP</th><th>Raw log</th></tr></thead><tbody>
+    {% for entry in log_entries %}<tr>
+      <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ entry.event_type }}</td>
+      <td>{{ entry.source_ip }}</td><td>{{ entry.destination_ip }}</td><td class="raw-log">{{ entry.raw_log }}</td>
+    </tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<p class="muted">No parsed log events are associated with this incident.</p>{% endif %}
+</section>
+<section class="panel detail-panel">
+  <h2>3. IP investigation findings</h2>
+  <p class="muted">Profiles are calculated only from this incident's logs. Risk and location are simulated training indicators, not verified threat intelligence.</p>
+  {% if ip_findings %}
+  <div class="table-wrap"><table><thead><tr><th>IP address</th><th>Event count</th><th>Event types</th><th>First seen</th><th>Last seen</th><th>Simulated risk</th><th>Simulated location</th></tr></thead><tbody>
+    {% for finding in ip_findings %}<tr>
+      <td>{{ finding.ip }}</td><td>{{ finding.request_count }}</td>
+      <td>{% for event, count in finding.event_counts %}{{ event }} ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ finding.first_seen.strftime('%Y-%m-%d %H:%M:%S') if finding.first_seen else '—' }}</td>
+      <td>{{ finding.last_seen.strftime('%Y-%m-%d %H:%M:%S') if finding.last_seen else '—' }}</td>
+      <td><span class="badge severity-{{ finding.risk|lower }}">{{ finding.risk }}</span></td><td>{{ finding.location }}</td>
+    </tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<p class="muted">No IP findings are available because no log events have been parsed.</p>{% endif %}
+</section>
+<section class="panel detail-panel">
+  <h2>4. Investigation notes</h2>
+  {% if notes %}
+    {% for note in notes %}<article class="report-note">
+      <p class="muted">{{ note.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+      <div class="report-prewrap">{{ note.content }}</div>
+    </article>{% endfor %}
+  {% else %}<p class="muted">No investigation notes have been recorded.</p>{% endif %}
+</section>
+<footer class="muted report-footer">End of report · CyberPath · Training and investigation record</footer>
+<style>
+.report-prewrap{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.report-note{padding:14px 0;border-top:1px solid var(--line)}
+.report-note p{margin:0 0 8px}
+.report-footer{text-align:center;padding:12px}
+@media print {
+  :root{color-scheme:light}
+  body{background:#fff!important;color:#111!important;font-size:10pt}
+  .navbar,.report-actions,.flash{display:none!important}
+  main{width:100%;margin:0;padding:0}
+  .panel{background:#fff!important;color:#111!important;border:1px solid #bbb!important;box-shadow:none!important;break-inside:avoid;padding:16px;margin:0 0 14px}
+  h1,h2,h3,strong,td,th,.report-prewrap{color:#111!important}
+  p,.muted{color:#444!important}
+  a{color:#111!important;text-decoration:none}
+  table{font-size:8pt}
+  th,td{white-space:normal;border-bottom:1px solid #ccc;padding:6px}
+  .badge{border:1px solid #888!important;background:#fff!important;color:#111!important}
+  .report-footer{color:#444!important}
+  @page{size:auto;margin:16mm}
+}
+</style>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}IP investigation — {{ incident.title }} | CyberPath{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.incident_detail', incident_id=incident.id) }}">← Back to incident</a>
+<div class="page-heading"><div><p class="eyebrow">NETWORK ANALYSIS · INCIDENT #{{ incident.id }}</p><h1>IP investigation</h1><p class="muted">{{ incident.title }}</p></div></div>
+<section class="panel detail-panel">
+  <form class="filter-bar" method="get" action="{{ url_for('main.ip_lookup', incident_id=incident.id) }}">
+    <input name="ip" value="{{ ip_address }}" placeholder="Enter an IP address" aria-label="IP address" required>
+    <button class="button" type="submit">Investigate</button>
+  </form>
+  {% if profile and profile.request_count %}
+  <div class="section-heading"><div><p class="eyebrow">ACTIVITY PROFILE</p><h2>{{ profile.ip }}</h2></div><span class="badge severity-{{ profile.risk|lower }}">Simulated risk: {{ profile.risk }}</span></div>
+  <div class="stats-grid">
+    <div class="stat-card"><span>Total matching events</span><strong>{{ profile.request_count }}</strong></div>
+    <div class="stat-card"><span>First seen</span><strong style="font-size:17px">{{ profile.first_seen.strftime('%Y-%m-%d %H:%M:%S') }}</strong></div>
+    <div class="stat-card"><span>Last seen</span><strong style="font-size:17px">{{ profile.last_seen.strftime('%Y-%m-%d %H:%M:%S') }}</strong></div>
+  </div>
+  <h2>Associated event types</h2>
+  {% if profile.event_counts %}<div class="table-wrap"><table><thead><tr><th>Event type</th><th>Count</th></tr></thead><tbody>{% for event, count in profile.event_counts %}<tr><td>{{ event }}</td><td>{{ count }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="muted">No event types recorded.</p>{% endif %}
+  <p class="muted"><strong>Simulated location:</strong> {{ profile.location }}</p>
+  <p class="muted" style="font-size:12px">Training-only heuristic. This is not a real geolocation, reputation, or threat-intelligence assessment.</p>
+  {% elif ip_address %}<p class="muted">No matching activity was found for this IP in this incident.</p>{% else %}<p class="muted">Search for an IP address to view its activity in this incident only.</p>{% endif %}
+</section>
+{% endblock %}
